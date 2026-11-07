@@ -1,0 +1,89 @@
+# ---------------------------------------------------------------------------
+# PyTorch / model weights
+# ---------------------------------------------------------------------------
+*.pt
+*.pth
+*.pth.tar
+*.ckpt
+*.bin
+*.safetensors
+*.onnx
+*.torchscript
+*.tflite
+*.h5
+*.hdf5
+*.pb
+*.joblib
+
+# Serialized tensors / arrays
+*.npy
+*.npz
+*.pkl
+
+# Common export / checkpoint directories
+checkpoints/
+checkpoint/
+weights/
+pretrained/
+models/*.pt
+models/*.pth
+
+# Hugging Face cache
+.cache/huggingface/
+huggingface/
+
+# TorchVision / torch hub downloads
+.cache/torch/
+
+# Training logs
+runs/
+wandb/
+lightning_logs/
+events.out.tfevents.*
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.env
+.python-version
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# ---------------------------------------------------------------------------
+# Data / large artifacts
+# ---------------------------------------------------------------------------
+data/
+datasets/
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# ---------------------------------------------------------------------------
+# Secrets / local config
+# ---------------------------------------------------------------------------
+.env.local
+*.key
+*.pem
+
+# Keep placeholder files so empty directories can still be tracked
+!**/.gitkeep
