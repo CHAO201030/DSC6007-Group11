@@ -21,7 +21,9 @@
 *.pkl
 
 # Common export / checkpoint directories
-checkpoints/
+# keep the directory itself (and its .gitkeep) but ignore all weights/runs
+checkpoints/*
+!checkpoints/.gitkeep
 checkpoint/
 weights/
 pretrained/
@@ -69,9 +71,9 @@ env/
 .DS_Store
 
 # ---------------------------------------------------------------------------
-# Data / large artifacts
+# Data / large artifacts (root-level only; GameEnv/data is vendored)
 # ---------------------------------------------------------------------------
-data/
+/data/
 datasets/
 *.zip
 *.tar

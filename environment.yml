@@ -1,0 +1,38 @@
+# Minimal runtime for GameEnv (vendored Overcooked-AI 2.0.0).
+#
+#   conda env create -f environment.yml
+#   conda activate gameenv
+#   python test_env.py
+#
+# Notes:
+# - numpy<3: upstream declares numpy<2, but everything in GameEnv
+#   (MDP, planners, rendering, gym wrapper) is tested with numpy 2.x.
+# - opencv-python-headless provides `cv2`, used only to resize rendered
+#   frames. The actual visualization/rendering is done by pygame.
+# - pytorch from conda-forge is the CPU build. On a CUDA machine, remove
+#   `pytorch` from this file, create the env, then install the GPU wheel:
+#       pip install torch --index-url https://download.pytorch.org/whl/cu126
+# - Add your own RL library on top if you use one, e.g.
+#       stable-baselines3>=2.3     # SB3 PPO
+#       tensorboard                # logging
+
+name: gameenv
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.12
+  - numpy>=1.26,<3
+  - scipy>=1.11
+  - gymnasium>=1.0
+  - pygame>=2.5
+  - tqdm>=4.65
+  - pytorch>=2.2
+  # plotting, same stack as the StudyGymnasium scripts
+  - matplotlib>=3.8
+  - pandas>=2.1
+  - seaborn>=0.13
+  - pip
+  - pip:
+      - opencv-python-headless>=4.8
