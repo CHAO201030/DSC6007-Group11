@@ -1,5 +1,7 @@
 # Beyond Self-Play: A Controlled Study of Partner Generalisation in a Collaborative Kitchen Environment
 
+[English](README.en.md) | 简体中文
+
 **DSC6007 Group 11**
 
 本项目以 [HumanCompatibleAI/overcooked_ai](https://github.com/HumanCompatibleAI/overcooked_ai)
