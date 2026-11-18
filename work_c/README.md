@@ -56,7 +56,7 @@ python -m work_c.scripts.reproduce --check
 
 ---
 
-## 关键设计（这些是踩过坑之后定的）
+## 关键设计（出过的问题总结）
 
 ### 1. 座位固定
 
@@ -160,8 +160,3 @@ gap = median(soups | seen 伙伴) − median(soups | held-out 伙伴)
 | `envs/`（A） | `OvercookedSingleEnv` / `EnvConfig` / `joint_index` | ❌ 不用，自建 `gameenv_wrapper.py` |
 | `algorithms/`（B） | `PPO` / `save_weights` / `load_weights` | ⚠️ 只读取它产出的 checkpoint 文件 |
 | `agents/`（C） | `SPPolicy` / `FCPPool` / 脚本 bot | ✅ 直接使用 |
-
-**为什么不复用 `envs/`**：A 的 `OvercookedSingleEnv` 没有传 `start_state_fn`，
-起始状态固定，会把上面第 2 条的核心修复退回去。
-
-如果 A 之后加上了随机初始状态，只需改 `eval/gameenv_wrapper.py` 一个文件即可切换。
