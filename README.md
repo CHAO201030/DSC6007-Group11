@@ -1,280 +1,175 @@
-# Beyond Self-Play: A Controlled Study of Partner Generalisation in a Collaborative Kitchen Environment
+# agents/ — 伙伴策略
 
-English | [简体中文](README.zh-CN.md)
+三种伙伴策略的实现，供**训练层**和**评估层**共同使用。
 
-**DSC6007 Group 11**
+本目录自成一体，不依赖仓库里的其他 Python 包，可直接 `from agents import ...`。
 
-This project vendors the runtime environment of
-[HumanCompatibleAI/overcooked_ai](https://github.com/HumanCompatibleAI/overcooked_ai)
-v2.0.0 as the `GameEnv/` package, so the Gymnasium-style Overcooked environment can be
-used directly **without `pip install`**.
+---
 
-The goal is a controlled study of **partner generalisation** in the two-player
-cooperative Overcooked kitchen task: when training exposes an agent to only a
-limited set of partners (including self-play), can the resulting policy still
-collaborate effectively with unseen partners at evaluation time?
+## 一、接口约定
 
-## Research Goals
-
-- Compare self-play with partner-diverse training under a fixed layout, horizon,
-  training budget and evaluation seed.
-- Evaluate collaboration with held-out partners, distinguishing "works with the
-  training partners" from "generalises to new partners".
-- Keep the environment, observation encodings and evaluation protocol fixed so
-  that differences between algorithms come mainly from the partner policies and
-  training regime.
-
-> Status: environment setup stage. Skeleton directories `agents/`, `algorithms/`,
-> `common/`, `config/` and `checkpoints/` exist; implementations await the team's
-> division of work.
-
-## Features
-
-- **Batteries included**: `GameEnv/` ships the MDP, planners, visualization, Gym
-  wrapper, and all layouts/graphics assets.
-- **No upstream installation**: no `pip install overcooked_ai`, avoiding duplicate
-  module trees and class-identity issues.
-- **Gymnasium 1.x compatible**: `reset(seed=...)` returns `(obs, info)` and
-  `step()` returns a 5-tuple.
-- **Minimal conda environment**: `environment.yml` contains only the dependencies
-  needed for running, training and plotting.
-- **Smoke tests**: a single command validates the MDP, planners, rendering and Gym
-  API.
-
-## Quick Start
-
-```bash
-# 1. Create the environment (Linux / macOS / Windows)
-conda env create -f environment.yml
-conda activate gameenv
-
-# 2. Verify the environment
-python test_env.py
-```
-
-Expected output (the script prints its check names in Chinese):
-
-```
-GameEnv smoke test | layout='cramped_room' steps=20 seed=0
-
-[PASS] 模块来源 — GameEnv 独立加载，overcooked_ai 未安装
-[PASS] 布局加载 — grid=(5, 4)
-[PASS] MDP transition — timestep 0 -> 1
-[PASS] 观测编码 — featurized=(96,), lossless=(5, 4, 26)
-[PASS] OvercookedEnv rollout — 20 步, total_reward=0.00
-[PASS] Gymnasium API — reset -> (obs, info); step -> 5-tuple
-[PASS] seed 可复现 — agent_idx=1, obs 一致
-[PASS] 渲染 — frame=(928, 1056, 3), dtype=uint8
-
-8/8 项检查通过
-```
-
-> No need to `pip install` this repository; run from the repository root
-> (`GameEnv` is imported by directory).
-
-## Directory Structure
-
-```
-DSC6007-Group11/
-├── GameEnv/                 # vendored Overcooked-AI environment (read-only, see VENDORING.md)
-│   ├── actions.py           # actions and directions
-│   ├── overcooked_mdp.py    # MDP: states, transitions, observation encoding
-│   ├── overcooked_env.py    # OvercookedEnv + Gymnasium wrapper
-│   ├── planners.py          # motion / medium-level planners
-│   ├── state_visualizer.py  # pygame rendering
-│   ├── data/                # layouts, graphics, fonts, planner cache
-│   └── VENDORING.md         # upstream source and modification log
-├── agents/                  # decision and partner/opponent policies (to be implemented)
-│   └── __init__.py
-├── algorithms/              # learning algorithms such as PPO (to be implemented)
-│   └── __init__.py
-├── common/                  # shared interfaces and utilities
-│   └── __init__.py
-├── config/                  # one YAML config per experiment
-│   └── .gitkeep
-├── checkpoints/             # weights and run metadata (contents are git-ignored)
-│   └── .gitkeep
-├── environment.yml          # minimal conda environment
-├── test_env.py              # environment smoke tests
-├── LICENSE                  # MIT for this repository
-├── GameEnv/LICENSE.overcooked_ai
-├── README.md                # this file (English; shown on GitHub)
-└── README.zh-CN.md          # Chinese README
-```
-
-> `envs/` (environment wrappers), `scripts/` (training/evaluation entry points)
-> and `tests/` (contract tests) will be added when the training pipeline is
-> implemented.
-
-## Code Organization Conventions
-
-| Directory | Contains | Does not contain |
-|---|---|---|
-| `agents/` | `act(obs) -> int`, rule-based policies, partner/opponent policies, wrappers around trained policies | losses, optimizers, GAE |
-| `algorithms/` | networks, losses, optimizers, rollout buffers, GAE, training loops | environment details, evaluation scripts, partner-selection logic |
-| `common/` | shared `Protocol`s, observation/action utilities, seeding helpers | concrete algorithm implementations |
-| `config/` | one YAML per experiment (layout, hyperparameters, seed, number of steps) | code |
-| `checkpoints/` | `best.pt`, `last.pt`, `run.json`, etc. | anything except `.gitkeep` should be committed |
-
-Changes to `common/` interfaces require group review; `GameEnv/` is read-only;
-the contents of `checkpoints/` never enter git.
-
-## Usage Examples
-
-### 1. Using the MDP directly (no Gym needed)
+所有策略对象都实现同一套接口：
 
 ```python
-from GameEnv.actions import Action
-from GameEnv.overcooked_mdp import OvercookedGridworld
-
-mdp = OvercookedGridworld.from_layout_name("cramped_room")
-state = mdp.get_standard_start_state()
-
-next_state, info = mdp.get_state_transition(
-    state, (Action.STAY, Action.STAY)
-)
-print(next_state.timestep)  # 1
+policy.reset(seed)                    # 每局开始时调用一次，用于重新播种
+policy.act(obs, agent_index) -> int   # 返回动作索引 0..5
 ```
 
-### 2. Using `OvercookedEnv` (joint actions; recommended for multi-agent)
+| 参数 | 类型 | 含义 |
+|---|---|---|
+| `obs` | `np.ndarray (2, 96)` float32 | `obs[0]` 恒为 **player0** 的观测，`obs[1]` 为 player1 |
+| `agent_index` | `int` | 我是几号玩家：`0` 或 `1` |
+| 返回值 | `int` | `0`=NORTH `1`=SOUTH `2`=EAST `3`=WEST `4`=STAY `5`=INTERACT |
+
+> ⚠️ `reset(seed)` **必须每局调用**。带随机性的策略（如 `RandomBot`）内部靠它重新播种；
+> 不调用的话 RNG 会跨局累积，导致"同样的 seed 每次结果不同"。
+
+---
+
+## 二、三个模块
+
+| 模块 | 导出的类 | 用途 | 对应"三种伙伴"中的 |
+|---|---|---|---|
+| `scripted.py` | `StayBot` / `RandomBot` | 固定规则 bot | 脚本 bot（固定规则，作下界） |
+| `checkpoint.py` | `SPPolicy` | 把 checkpoint 包成策略 | self-play 快照（当前策略的副本） |
+| `pools.py` | `FCPPool` | 历史 checkpoint 池，均匀采样 | 历史 checkpoint 池（FCP） |
+
+### `scripted.py`
 
 ```python
-from GameEnv.actions import Action
-from GameEnv.overcooked_mdp import OvercookedGridworld
-from GameEnv.overcooked_env import OvercookedEnv
+from agents import StayBot, RandomBot
 
-mdp = OvercookedGridworld.from_layout_name("cramped_room")
-env = OvercookedEnv.from_mdp(mdp, horizon=400, info_level=0)
-
-state, reward, done, info = env.step((Action.INTERACT, Action.STAY))
-print(reward)                       # sparse reward (non-zero only on soup delivery)
-print(info["sparse_r_by_agent"])    # per-agent sparse rewards
-print(info["shaped_r_by_agent"])    # per-agent shaping rewards
+bot = StayBot()          # 永远 STAY
+bot = RandomBot(seed=0)  # 每步随机
 ```
 
-- `OvercookedEnv.step` takes a **joint action** `(action_p0, action_p1)`.
-- It returns `(next_state, reward, done, info)`.
-- `done` is determined by `horizon` (Overcooked has no true terminal states).
-
-### 3. Using the Gymnasium interface
+### `checkpoint.py` — `SPPolicy`
 
 ```python
-import gymnasium as gym
-from GameEnv.overcooked_mdp import OvercookedGridworld
-from GameEnv.overcooked_env import OvercookedEnv
+from agents import SPPolicy
 
-mdp = OvercookedGridworld.from_layout_name("cramped_room")
-base_env = OvercookedEnv.from_mdp(mdp, horizon=400, info_level=0)
-
-env = gym.make(
-    "Overcooked-v0",
-    base_env=base_env,
-    featurize_fn=base_env.featurize_state_mdp,
-    # obs is a dict containing OvercookedState, which a Box space cannot describe
-    disable_env_checker=True,
-)
-
-obs, info = env.reset(seed=0)
-obs, reward, terminated, truncated, info = env.step((4, 4))  # (STAY, STAY)
+p = SPPolicy("checkpoints/step0450560.pt", deterministic=True)
+p.selftest()             # 建议加载后调用一次
 ```
 
-- Observations are a dict: `both_agent_obs`, `overcooked_state`,
-  `other_agent_env_idx`.
-- The action space is declared as `Discrete(6)`, but `step()` actually takes
-  `(own_action, other_agent_action)`.
-- Training PPO/SB3 requires a wrapper that extracts observations into arrays and
-  maps actions to a standard `Discrete` space.
+| 属性 | 说明 |
+|---|---|
+| `p.path` | checkpoint 路径 |
+| `p.digest` | 文件的 sha256（用于结果溯源） |
+| `p.global_step` | 从 checkpoint 元信息读取的训练步数，读不到为 `-1` |
+| `p.obs_dim` | 自动从权重形状推断（96 或 192） |
 
-### Action Indices
+**加载行为**：
+- 支持 `{"state_dict": ..., "obs_dim": 96, ...}` 或裸 `state_dict`
+- 自动剥掉 `actor.` / `policy.` 前缀，自动丢弃 `critic.` / `value.` 权重
+- 网络结构默认 `obs_dim -> 128 -> 128 -> 6`（`Tanh` 激活），`hidden` 从权重推断
+- **缺键直接抛 `RuntimeError`**，不会静默保留随机权重
 
-| Index | Action | Description |
-|---|---|---|
-| 0 | `NORTH` | move up |
-| 1 | `SOUTH` | move down |
-| 2 | `EAST` | move right |
-| 3 | `WEST` | move left |
-| 4 | `STAY` | stay in place |
-| 5 | `INTERACT` | interact (pick up, put in pot, serve, ...) |
-
-### Observation Encodings
+### `pools.py` — `FCPPool`
 
 ```python
-# For MLPs: a 96-dimensional vector per agent
-obs_p0, obs_p1 = base_env.featurize_state_mdp(base_env.state)
+from agents import FCPPool
 
-# For CNNs: an (H, W, 26) tensor
-enc_p0, enc_p1 = base_env.lossless_state_encoding_mdp(base_env.state)
-print(enc_p0.shape)  # e.g. (5, 4, 26)
+pool = FCPPool(["ckpt_1.pt", "ckpt_2.pt", ...])
+len(pool)                        # 池大小
+paths = pool.sample(n=1, seed=42)  # 返回**路径列表**（不是策略对象）
 ```
 
-## Testing
+- 采样是无放回均匀采样，结果与 `seed` 绑定、可复现
+- 池为空时构造直接抛 `ValueError`
 
-```bash
-python test_env.py                                  # cramped_room, 20 steps
-python test_env.py --layout forced_coordination     # another layout
-python test_env.py --steps 50 --seed 7              # custom steps and seed
-python test_env.py --all-layouts                    # check all 49 bundled layouts
-python test_env.py --skip-render                    # skip rendering on headless machines
+---
+
+## 三、训练时怎么用
+
+### 最小示例
+
+```python
+import glob
+from agents import FCPPool, SPPolicy
+
+# 1) 建池（一次性，在训练开始前）
+pool = FCPPool(sorted(glob.glob("checkpoints/*.pt")))
+
+# 2) 需要换对手时
+paths = pool.sample(n=1, seed=global_step)
+partner = SPPolicy(paths[0], deterministic=False)   # ★ 训练必须 False
+
+# 3) 每局开始
+partner.reset(ep_seed)
+
+# 4) 每步
+partner_action = partner.act(obs, agent_index=1)
 ```
 
-| Flag | Default | Description |
+### 三个必须注意的点
+
+1. **`deterministic=False`**
+   `SPPolicy` 默认 `deterministic=True`（argmax 确定性动作），那是**评估**用的。
+   训练时如果不传 `False`，对手永远做同一个动作，探索完全没有。
+
+2. **`sample()` 返回路径，不是策略对象**
+   需要自己包一层 `SPPolicy(...)`。如果你想避免重复加载权重，可以自己缓存：
+
+   ```python
+   cache = {}
+   def get_partner(path, seed):
+       if path not in cache:
+           cache[path] = SPPolicy(path, deterministic=False)
+       p = cache[path]
+       p.reset(seed)
+       return p
+   ```
+
+   单个 checkpoint 约 240 KB，加载开销很小，但训练循环里每步都加载会明显变慢。
+
+3. **`reset(seed)` 每局调用一次**
+   对 `SPPolicy` 是空操作（确定性策略无内部随机状态），但 `RandomBot` 必须调用。
+   统一调用不会出错，养成习惯。
+
+### 用脚本 bot 当对手
+
+```python
+from agents import RandomBot, StayBot
+
+partner = StayBot()      # 下界
+partner = RandomBot()    # 下界
+partner.reset(ep_seed)
+```
+
+---
+
+## 四、评估时怎么用
+
+```python
+from agents import SPPolicy
+
+ego = SPPolicy("checkpoints/best.pt", deterministic=True)
+ego.selftest()
+
+obs = np.zeros((2, 96), dtype=np.float32)
+action = ego.act(obs, agent_index=0)
+```
+
+评估用的完整流水线在 `work_c/`：
+- `python -m work_c.scripts.evaluate --ckpt <路径> --out results.json`
+- `python -m work_c.scripts.reproduce`
+
+---
+
+## 五、已知限制
+
+| # | 限制 | 说明 |
 |---|---|---|
-| `--layout` | `cramped_room` | layout name |
-| `--steps` | `20` | random rollout length |
-| `--seed` | `0` | random seed |
-| `--all-layouts` | off | check every layout under `GameEnv/data/layouts` |
-| `--skip-render` | off | skip the pygame rendering check |
+| 1 | `obs_dim == 192` 分支未验证 | 该分支对两个 agent 返回同一个拼接向量，若将来用 192 维模型会出问题 |
+| 2 | 只支持 `96 -> 128 -> 128 -> 6` 的 MLP | 若是 CNN 或更深/更宽的网络，需要改 `PolicyNet` |
+| 3 | 只支持离散动作空间（6 个） | 不支持连续动作 |
+| 4 | checkpoint 必须是 PyTorch `.pt` | SB3 的 `.zip` 需要另写适配器 |
+| 5 | `PolicyNet` 是临时实现 | 推理用的网络定义放在本目录，是为了能直接加载 checkpoint。正式的**网络结构归属 `algorithms/`（B）**；B 提供 `load_policy` 后应替换为调用它 |
 
-Set `GAMEENV_TEST_TRACEBACK=1` to print full tracebacks.
+---
 
-## Environment
+## 六、修改本目录的约定
 
-| Dependency | Version (solver result) | Purpose |
-|---|---|---|
-| Python | 3.12 | |
-| NumPy | 2.5.4 | MDP and observations |
-| SciPy | 1.18.1 | sparse graph search in planners |
-| Gymnasium | 1.3.0 | `gym.Env` and `Overcooked-v0` registration |
-| pygame | 2.6.1 | rendering and `StateVisualizer` |
-| PyTorch | 2.14.1 (CPU) | training |
-| tqdm | 4.70.1 | progress bars |
-| matplotlib / pandas / seaborn | 3.x / 3.x / 0.13 | learning-curve plots |
-| opencv-python-headless | >=4.8 | resizing rendered frames (pip) |
-
-- The default PyTorch build is **CPU-only**. On a CUDA machine, remove `pytorch`
-  from the YAML, create the environment, then run:
-  `pip install torch --index-url https://download.pytorch.org/whl/cu126`
-- Headless machines (WSL/servers) need a dummy video driver: `test_env.py` sets
-  `SDL_VIDEODRIVER=dummy` automatically; other scripts must set it themselves
-  before importing `GameEnv`. The Gym wrapper's `env.render()` returns an RGB
-  ndarray; for a live pygame window use `OvercookedEnv.display_states(...)` or
-  `StateVisualizer.display_rendered_state(...)` with a working WSLg/X11 display.
-- `GameEnv/data/planners/*.pkl` are planner caches generated on first use and are
-  ignored by `.gitignore`; delete them and they will be recomputed on demand.
-
-## Known Caveats
-
-1. **Do not `pip install overcooked_ai`.** This repository uses `GameEnv` as the
-   single environment source; installing the upstream package side by side creates
-   two module trees and breaks class identity and pickles.
-2. **`GameEnv/` is vendored code** and should stay read-only. If a change is
-   unavoidable, record it in `GameEnv/VENDORING.md` instead of patching it ad hoc.
-3. **Rewards are sparse.** By default reward is given only on soup delivery; for
-   training you may add `info["shaped_r_by_agent"]` to the reward or design your
-   own reward shaping.
-4. **Horizon is not termination.** `done=True` means the horizon was reached
-   (truncation). Distinguish `terminated` from `truncated` in training to avoid
-   incorrect bootstrapping at truncation.
-5. **Weights do not go into git.** Everything under `checkpoints/` except
-   `.gitkeep` is ignored. Share weights via cloud storage, W&B artifacts or Git
-   LFS instead of committing large files.
-
-## Upstream and License
-
-- Upstream project: [HumanCompatibleAI/overcooked_ai](https://github.com/HumanCompatibleAI/overcooked_ai) v2.0.0
-- Changes in `GameEnv/` are limited to import paths, Gymnasium 1.x compatibility
-  and lazy imports of optional notebook dependencies; see
-  [`GameEnv/VENDORING.md`](GameEnv/VENDORING.md).
-- Upstream code is MIT-licensed; see
-  [`GameEnv/LICENSE.overcooked_ai`](GameEnv/LICENSE.overcooked_ai).
-- This repository is MIT-licensed; see [`LICENSE`](LICENSE).
+- 这里的接口被训练层和评估层同时使用
+- 新增伙伴类型时，实现 `reset(seed)` + `act(obs, agent_index)` 两个方法即可
