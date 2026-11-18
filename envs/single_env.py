@@ -86,10 +86,21 @@ class OvercookedSingleEnv:
         info = dict(info) if isinstance(info, dict) else {}
         info["timestep"] = self.timestep
 
-        # 累计本局 sparse 奖励（两个 agent 的 sparse 相加）
-        sparse = info.get("sparse_r_by_agent", None)
-        if sparse is not None:
-            self._ep_sparse += float(np.sum(sparse))
+        # ---- 奖励口径（重要）----
+        # 本仓库 GameEnv 的 env.step 只返回 sparse 奖励（上菜才非零），
+        # 塑形奖励在 info["shaped_r_by_agent"] 里，需要在这里加回去。
+        # 训练奖励 = sparse + shaped（use_reward_shaping=True 时）；
+        # 评估时应把 use_reward_shaping 设为 False，奖励 = 纯 sparse。
+        sparse_list = info.get("sparse_r_by_agent", None)
+        sparse = float(np.sum(sparse_list)) if sparse_list is not None else float(reward)
+        self._ep_sparse += sparse
+
+        shaped = 0.0
+        if self.cfg.use_reward_shaping:
+            shaped_list = info.get("shaped_r_by_agent", None)
+            if shaped_list is not None:
+                shaped = float(np.sum(shaped_list))
+        train_reward = sparse + shaped
 
         # 一局结束：输出整局统计（单环境和 vec 层口径统一，都用这三个键）
         if truncated or terminated:
@@ -97,7 +108,7 @@ class OvercookedSingleEnv:
             info["episode_soups"] = self._ep_sparse / SPARSE_PER_SOUP
             info["episode_length"] = self.timestep
 
-        return obs, float(reward), terminated, truncated, info
+        return obs, train_reward, terminated, truncated, info
 
     # ------------------------------------------------------------------ #
     def _obs(self) -> np.ndarray:
