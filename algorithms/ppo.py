@@ -111,7 +111,9 @@ class PPO(nn.Module):
             [torch.as_tensor(v, dtype=dtype, device=device) for v in value]
         )
 
-    def update(self, obs, actions, old_log_probs, advantages, returns):
+    def _prepare_update_data(
+        self, obs, actions, old_log_probs, advantages, returns
+    ):
         device = self.param.device
 
         obs = self._stack_steps(obs, device, torch.float32)
@@ -124,7 +126,7 @@ class PPO(nn.Module):
         actions = actions.reshape(-1)
         old_log_probs = old_log_probs.reshape(-1).detach()
         advantages = advantages.reshape(-1)
-        returns = returns.reshape(-1)
+        returns = returns.reshape(-1).detach()
 
         n = obs.shape[0]
         if not (
@@ -138,11 +140,21 @@ class PPO(nn.Module):
                 f"{returns.numel()}"
             )
 
+        return obs, actions, old_log_probs, advantages, returns
+
+    def update(self, obs, actions, old_log_probs, advantages, returns):
+        obs, actions, old_log_probs, advantages, returns = (
+            self._prepare_update_data(
+                obs, actions, old_log_probs, advantages, returns
+            )
+        )
+        n = obs.shape[0]
+        device = self.param.device
+
         advantages = (advantages - advantages.mean()) / (
             advantages.std(unbiased=False) + 1e-8
         )
         advantages = advantages.detach()
-        returns = returns.detach()
 
         clip_coef = self.param.eps
         batch_size = max(1, min(int(self.param.minibatch_size), n))
