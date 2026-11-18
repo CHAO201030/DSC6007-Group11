@@ -111,9 +111,7 @@ class PPO(nn.Module):
             [torch.as_tensor(v, dtype=dtype, device=device) for v in value]
         )
 
-    def _prepare_update_data(
-        self, obs, actions, old_log_probs, advantages, returns
-    ):
+    def _prepare_update_data(self, obs, actions, old_log_probs, advantages, returns):
         device = self.param.device
 
         obs = self._stack_steps(obs, device, torch.float32)
@@ -143,11 +141,7 @@ class PPO(nn.Module):
         return obs, actions, old_log_probs, advantages, returns
 
     def update(self, obs, actions, old_log_probs, advantages, returns):
-        obs, actions, old_log_probs, advantages, returns = (
-            self._prepare_update_data(
-                obs, actions, old_log_probs, advantages, returns
-            )
-        )
+        obs, actions, old_log_probs, advantages, returns = self._prepare_update_data(obs, actions, old_log_probs, advantages, returns)
         n = obs.shape[0]
         device = self.param.device
 
@@ -165,7 +159,7 @@ class PPO(nn.Module):
         clip_fraction_sum = 0.0
         seen = 0
 
-        for _ in range(int(self.param.epochs)):
+        for _ in range(self.param.epochs):
             indices = torch.randperm(n, device=device)
             for start in range(0, n, batch_size):
                 idx = indices[start : start + batch_size]
@@ -217,7 +211,6 @@ class PPO(nn.Module):
             value_loss_sum / denom,
             clip_fraction_sum / denom,
         )
-
 
 
 if __name__ == "__main__":
