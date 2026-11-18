@@ -1,4 +1,4 @@
-# work_c/partners/fcp_pool/fcp_loader.py
+# agents/pools.py
 """Fictitious Co-Play 伙伴池。"""
 
 import random

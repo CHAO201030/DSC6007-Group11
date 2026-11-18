@@ -1,4 +1,4 @@
-# work_c/partners/self_play_snapshots/sp_loader.py
+# agents/checkpoint.py
 """加载检查点。兼容 obs=(2,96) 的 ndarray 和 dict 两种输入。"""
 
 import hashlib

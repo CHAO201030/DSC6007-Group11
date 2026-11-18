@@ -1,4 +1,4 @@
-# work_c/partners/scripted_bots/bots.py
+# agents/scripted.py
 """固定规则的脚本 bot —— 评估下界。"""
 
 import numpy as np
