@@ -89,3 +89,6 @@ datasets/
 
 # Keep placeholder files so empty directories can still be tracked
 !**/.gitkeep
+
+# --- A 层补充：训练结果目录 ---
+results/
