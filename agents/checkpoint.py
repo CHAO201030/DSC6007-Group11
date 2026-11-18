@@ -36,7 +36,9 @@ def _extract_obs(obs, agent_index, obs_dim):
         a0, a1 = obs["both_agent_obs"]
     else:
         if obs_dim == 192:
-            return np.concatenate([obs[0], obs[1]], axis=-1).astype(np.float32)
+            # 两个 agent 看到的拼接顺序必须不同，否则动作完全相同、配合直接崩
+            pair = [obs[0], obs[1]] if agent_index == 0 else [obs[1], obs[0]]
+            return np.concatenate(pair, axis=-1).astype(np.float32)
         a0, a1 = obs[0], obs[1]
     return np.asarray(a0 if agent_index == 0 else a1, dtype=np.float32)
 
@@ -55,6 +57,37 @@ class SPPolicy:
             ckpt = torch.load(self.path, map_location=device, weights_only=False)
 
         meta = ckpt if isinstance(ckpt, dict) else {}
+
+        # ── 兼容 B 的 checkpoint 格式 ──
+        # B 的 algo_utils.save_weights 存的是：
+        #   {"format_version":1, "step":N, "param":{...},
+        #    "actor_state":{...}, "critic_state":{...}, "optimizer_state":{...}}
+        # Actor 内部是 self.network，所以键名形如 network.0.weight
+        if "actor_state" in meta:
+            param = meta.get("param") or {}
+            self.obs_dim = int(param.get("obs_dim", 96))
+            hidden = int(param.get("hidden_dim", 128))
+            n_actions = int(param.get("action_dim", 6))
+
+            sd_b = {}
+            for k, v in meta["actor_state"].items():
+                kk = k[len("network."):] if k.startswith("network.") else k
+                if not kk.startswith("net."):
+                    kk = "net." + kk
+                sd_b[kk] = v
+
+            self.net = PolicyNet(self.obs_dim, n_actions, hidden).to(device)
+            missing, unexpected = self.net.load_state_dict(sd_b, strict=False)
+            if missing:
+                raise RuntimeError(
+                    f"{self.path}: 有 {len(missing)} 个权重没加载上 {missing}"
+                )
+            if unexpected:
+                print(f"[warn] {Path(self.path).name}: 忽略了多余的键 {unexpected}")
+            self.net.eval()
+            self.global_step = int(meta.get("step", -1))
+            return
+
         raw = meta.get("state_dict", ckpt)
 
         # 过滤 actor. / policy. 前缀，丢掉 critic
