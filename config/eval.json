@@ -1,0 +1,19 @@
+{
+  "env": {
+    "layout": "cramped_room",
+    "horizon": 400,
+    "info_level": 0
+  },
+  "eval": {
+    "episodes": 5,
+    "deterministic": true,
+    "seed": 0,
+    "output": "checkpoints/eval/eval_result.json"
+  },
+  "partner": {
+    "type": "random",
+    "seed": 1
+  },
+  "checkpoint": null,
+  "device": "cpu"
+}
