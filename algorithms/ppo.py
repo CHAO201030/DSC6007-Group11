@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from torch.distributions import Categorical
 
 if __package__:
-    from .algo_utils import get_device
+    from .algo_utils import get_device, load_weights
 else:
-    from algo_utils import get_device
+    from algo_utils import get_device, load_weights
 
 @dataclass
 class PPOParams:
@@ -211,6 +211,18 @@ class PPO(nn.Module):
             value_loss_sum / denom,
             clip_fraction_sum / denom,
         )
+
+
+def load_policy(path, device: str = "cpu") -> PPO:
+    """Load one PPO checkpoint and return a ready-to-use policy."""
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    param = PPOParams(**checkpoint["param"])
+    param.device = device
+
+    model = PPO(param)
+    load_weights(model, path)
+    model.global_step = int(checkpoint.get("step", -1))
+    return model
 
 
 if __name__ == "__main__":

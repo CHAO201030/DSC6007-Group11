@@ -57,13 +57,13 @@ p.selftest()             # 建议加载后调用一次
 | `p.path` | checkpoint 路径 |
 | `p.digest` | 文件的 sha256（用于结果溯源） |
 | `p.global_step` | 从 checkpoint 元信息读取的训练步数，读不到为 `-1` |
-| `p.obs_dim` | 自动从权重形状推断（96 或 192） |
+| `p.obs_dim` | 从 B checkpoint 的 `param.obs_dim` 读取 |
 
 **加载行为**：
-- 支持 `{"state_dict": ..., "obs_dim": 96, ...}` 或裸 `state_dict`
-- 自动剥掉 `actor.` / `policy.` 前缀，自动丢弃 `critic.` / `value.` 权重
-- 网络结构默认 `obs_dim -> 128 -> 128 -> 6`（`Tanh` 激活），`hidden` 从权重推断
-- **缺键直接抛 `RuntimeError`**，不会静默保留随机权重
+- 调用 `algorithms.ppo.load_policy(path, device)`
+- 支持 B 的 PPO checkpoint（`param` + `actor_state` + `critic_state` + `optimizer_state`）
+- 网络结构由 `algorithms.ppo.PPO` 决定，`agents/` 不再维护第二份网络定义
+- 加载失败或结构不匹配会直接抛异常
 
 ### `pools.py` — `FCPPool`
 
@@ -162,10 +162,9 @@ action = ego.act(obs, agent_index=0)
 | # | 限制 | 说明 |
 |---|---|---|
 | 1 | `obs_dim == 192` 分支未验证 | 该分支对两个 agent 返回同一个拼接向量，若将来用 192 维模型会出问题 |
-| 2 | 只支持 `96 -> 128 -> 128 -> 6` 的 MLP | 若是 CNN 或更深/更宽的网络，需要改 `PolicyNet` |
+| 2 | 只支持 B 的 MLP PPO checkpoint | 网络结构由 `algorithms.ppo.PPO` 决定；CNN 或更深/更宽的网络需要扩展 B 的实现 |
 | 3 | 只支持离散动作空间（6 个） | 不支持连续动作 |
 | 4 | checkpoint 必须是 PyTorch `.pt` | SB3 的 `.zip` 需要另写适配器 |
-| 5 | `PolicyNet` 是临时实现 | 推理用的网络定义放在本目录，是为了能直接加载 checkpoint。正式的**网络结构归属 `algorithms/`（B）**；B 提供 `load_policy` 后应替换为调用它 |
 
 ---
 
