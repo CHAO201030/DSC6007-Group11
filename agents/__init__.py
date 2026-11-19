@@ -1,7 +1,14 @@
-"""Agent implementations: decision-making policies and partner policies.
+"""工作 C：伙伴策略。供训练层和评估层共同使用。"""
 
-Conventions:
-- Only acting logic belongs here (``act(obs) -> int``, partner selection,
-  rule-based policies, wrappers around a trained policy).
-- Losses, optimizers and GAE live in :mod:`algorithms`.
-"""
+from agents.checkpoint import PolicyNet, SPPolicy, sha256_file
+from agents.pools import FCPPool
+from agents.scripted import RandomBot, StayBot
+
+__all__ = [
+    "PolicyNet",
+    "SPPolicy",
+    "sha256_file",
+    "FCPPool",
+    "RandomBot",
+    "StayBot",
+]
