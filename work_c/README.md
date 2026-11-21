@@ -1,162 +1,172 @@
-# work_c/ — 评估协议（工作 C）
+# work_c/ — 智能体与评估层（工作 C）
 
-本目录是**独立的评估模块**，不依赖 `algorithms/`、`envs/` 的具体实现，只依赖：
-
-- `GameEnv/`（vendored 只读环境）
-- `agents/`（伙伴策略：`SPPolicy` / `StayBot` / `RandomBot` / `FCPPool`）
-
-目标是回答：**给定一个 checkpoint，它和不同伙伴配合得怎么样，能否复现。**
+回答两个问题：**给定一个 checkpoint，它和不同伙伴配合得怎么样；伙伴多样性训练能否改善这一点。**
 
 ---
 
-## 目录结构
+## 目录
 
 ```
 work_c/
-├── eval/
-│   ├── gameenv_wrapper.py   构造评估环境（座位固定 + 随机初始状态）
-│   ├── run_episode.py       跑一局，记录 soups / shaped / 轨迹指纹
-│   ├── run_sweep.py         按伙伴分组跑，产出 median/IQR + 配对 gap
-│   └── aggregate.py         把 results/raw/*.json 汇总成 CSV
-├── scripts/
-│   ├── evaluate.py          单个 checkpoint -> 一份标准 JSON（验收交付物）
-│   ├── run_all_experiments.py  批量评估多个 checkpoint（学习曲线数据）
-│   ├── plot_results.py      从 CSV 出图
-│   └── reproduce.py         一键全流程 + manifest 哈希校验
-└── results/
-    ├── raw/*.json           每个 checkpoint 的完整评估结果
-    ├── summary_long.csv     长表：一行 = 一个 checkpoint x 一个分组
-    ├── summary_wide.csv     宽表：一行 = 一个 checkpoint
-    ├── learning_curve.csv   画图用的精简表
-    ├── figures/*.png        学习曲线 + gap 图
-    └── manifest.json        所有输出文件的 sha256（用于跨机比对）
+├── eval/            环境包装、单局执行、分组扫描、汇总
+├── scripts/         入口：评估、批量、交叉矩阵、出图、复现校验
+│   └── legacy/      已归档的旧版绘图与流水线脚本（不要使用）
+├── results/         CSV / JSON / 图
+├── ckpt_final/      四条臂终点 checkpoint 的评估副本（脚本生成，权重本身不入库）
+└── README.md
 ```
+
+## results/ 里有什么
+
+| 文件 | 内容 |
+|---|---|
+| `decay_s{1,2,3,42,526007}.csv` | 兼容率衰减：同一训练轨迹内，ego 对距离 0–7.5M 步的伙伴 |
+| `transfer_stoch.csv` | 15 ego × 10 partner 的迁移矩阵（采样动作） |
+| `final_table.csv` | 四臂终点表（自对弈 / held-out / gap） |
+| `f42_cross.csv` | FCP-scratch seed42 对异源 checkpoint 的验证 |
+| `figures/F1–F6.png` | 报告配图（`plot_all.py` 生成） |
+| `raw_final/*.json` | 终点表 20 个 ego 的原始评估结果 |
+| `diag/*.json` | 过程中用于定位的诊断（冒烟、塌缩案例等） |
+| `TABLES.md` | 报告用的 T1/T2 表 |
+| `REPRO_CHECK.md` | 复现校验记录 |
 
 ---
 
-## 快速开始
+## 四条臂
+
+| 目录 | 报告里的名字 | 初始化 | 伙伴 | 步数 |
+|---|---|---|---|---|
+| `checkpoints/ppo_single_env` | **SP** | 随机 | 自己是同一份权重（联合训练） | 8M |
+| `checkpoints/fcp` | **FCP-scratch** | 随机 | 100% 池（5 seed × 16 checkpoint） | 8M |
+| `checkpoints/fcp2` | **Arm P** | SP@8M | 50% 自身 8M + 50% 池 | 4M |
+| `checkpoints/sp_ref` | **Arm S** | SP@8M | 100% 自身 8M（对照） | 4M |
+| `checkpoints/ppo_vec_env` | **held-out** | — | 仅评估使用，从未进入任何池 | — |
+
+---
+
+## 训练入口（train_fcp.py）
+
+位于**仓库根目录**（不在 `work_c/` 下），产出 Arm P / Arm S / FCP-scratch 三条臂。它与 B 的 `train.py`（联合自对弈）的唯一区别是「伙伴从哪来」。
+
+| 参数 | 作用 |
+|---|---|
+| `--pool-dir` | 伙伴池目录（可给多个），读取其中的 `*.pth` |
+| `--init-ckpt` | 热启动：只加载 actor / critic 权重，不续步数 |
+| `--self-ckpt` | 固定的自对弈伙伴路径 |
+| `--self-prob` | 每局改用 `--self-ckpt` 的概率（0 = 纯池） |
+| `--ckpt-interval` | 落盘间隔（默认 500k） |
+
+三条臂的启动差异：
+
+| 臂 | 关键参数 |
+|---|---|
+| FCP-scratch（8M） | 无 `--init-ckpt`、无 `--self-*`；`--pool-dir` 给 5 个 seed 目录 |
+| Arm P（4M） | `--init-ckpt` 与 `--self-ckpt` 都指向自身 8M，`--self-prob 0.5`，池给 5 个 seed |
+| Arm S（4M） | `--init-ckpt` 指向自身 8M；`--pool-dir` 只给「仅含自身 8M」的单文件目录 |
+| seed526007 | 上述「自身 8M」一律替换为 `ppo_clip_7500000.pth`（见 checkpoint 自检规则） |
+
+训练曲线写入 `results/{fcp,fcp2,sp_ref}/fcp_seed*.npz`，每个 checkpoint 刷一次盘，中途崩溃也能留下可用数据。
+
+---
+
+## 评估协议 v3
+
+| 项 | 取值 |
+|---|---|
+| 起始状态 | `standard`（与训练一致）。`random_obj` 会让所有臂一起崩，仅作鲁棒性附录 |
+| 动作 | **采样**（`--stochastic`）；argmax 只用于快速冒烟 |
+| 每格样本 | 3 个评估 seed × 5 局 = 15 局 |
+| 配对 | 每局 `torch.manual_seed(ep_seed)`，两臂消耗同一串随机数 |
+| 强 held-out | `ppo_vec_env` seed1–5 @8M |
+| 弱 held-out | `StayBot` / `RandomBot` |
+
+**跨臂可比性**：只有"两条臂都没见过"的集合才能用于跨臂比较，即 vec + bot。
+`ppo_single_env` 的其它 seed 对 SP 臂未见、对 Arm P 已见（在它的池里），因此只能作为 **SP-only 诊断**，不参与跨臂结论。
+
+---
+
+## checkpoint 自检规则
+
+每个 seed 的最终 checkpoint 必须通过自对弈自检（standard 起点、采样动作、≥ 9 汤）：
+
+- 未通过者回退到该 seed 最近的通过检查的 checkpoint，并在结果中注明；
+- **seed526007**：8M 未通过（0 汤 / shaped 174，塌缩态），改用 7.5M（11 汤）；
+- 规则对四条臂统一执行，不针对个别结果。
+
+---
+
+## 常用命令
 
 ```bash
-# 1. 单个 checkpoint 评估
-python -m work_c.scripts.evaluate \
-    --ckpt work_c/partners/self_play_snapshots/sp_seed0_best.pt \
-    --seen-dir work_c/partners/self_play_snapshots_old \
-    --heldout-ckpt work_c/partners/self_play_snapshots/sp_seed0_last.pt \
-    --n-episodes 5 --seeds 0,1,2,3,4 \
-    --out work_c/results/raw/sp_seed0_best.json
+# 单点评估（一份固定格式 JSON）
+python -m work_c.scripts.evaluate --ckpt <path> --heldout-ckpt <p1> <p2> \
+    --n-episodes 5 --seeds 0,1,2 --start-state standard --stochastic --out out.json
 
-# 2. 一键跑全部 + 出表 + 出图
-python -m work_c.scripts.reproduce
+# 批量（学习曲线 / 终点表）
+python -m work_c.scripts.run_all_experiments --ckpt-dir <dirs...> \
+    --heldout-ckpt <paths...> --n-episodes 5 --seeds 0,1,2 \
+    --start-state standard --stochastic --out-csv c.csv --raw-dir raw_x
 
-# 3. 重跑一遍并和上一次逐文件比对哈希
-python -m work_c.scripts.reproduce --check
+# 交叉矩阵
+python -m work_c.scripts.transfer_matrix --ego <...> --partner <...> \
+    --episodes 5 --start-state standard --stochastic --out m.csv
+
+# 出图（F1–F6）
+python -m work_c.scripts.plot_all
+
+# 复现校验（两次独立运行，逐字节比对）
+python -m work_c.scripts.check_repro
 ```
-
-**验收标准**：`--check` 输出 `[check] 通过：14 个输出文件全部一致`。
 
 ---
 
-## 关键设计（出过的问题总结）
+## 如何重建 ckpt_final/
 
-### 1. 座位固定
+`ckpt_final/` 是 20 个单文件目录（四条臂 × 5 个 seed），供终点表评估与 `check_repro` 使用。权重被 `.gitignore` 排除，因此新克隆需要重建：
 
-`GameEnv` 的 Gym wrapper 在每次 `reset()` 时随机 `agent_idx`（0 或 1），
-并把 `both_agent_obs` 和 joint action 都按「策略智能体」为中心重排。
-
-如果不处理，ego 有一半概率被喂成玩家 1 的观测。
-
-**处理**：`gameenv_wrapper.py` 在 `reset()` 后强制 `agent_idx = 0`，
-并从 `base_env.state` 重新 featurize，保证 `obs[0]` 恒为 player0。
-
-### 2. 初始状态随机化（最重要）
-
-确定性策略 + 固定起始状态时，**同一个伙伴的每一局完全相同**——
-只有座位在变。所以「跑 10 局」其实只有 1~2 个样本。
-
-实测：固定起始状态下 6 局只有 **1 条不同轨迹**；随机初始状态下 6 局有 **6 条**。
-
-**处理**：`--start-state random_obj`（默认）使用
-`mdp.get_random_start_state_fn(random_start_pos=True, rnd_obj_prob_thresh=0.5)`。
-
-### 3. 每局重新播种
-
-- `np.random.seed(ep_seed)`：`start_state_fn` 内部用的是全局 `np.random`
-- `policy.reset(ep_seed)`：带随机性的策略（如 `RandomBot`）必须每局重播，
-  否则 RNG 跨局累积，单独重跑某个 seed 数字就变了
-
-### 4. 配对计算 gap
-
-```
-gap = median(soups | seen 伙伴) − median(soups | held-out 伙伴)
+```powershell
+$dst = "work_c\ckpt_final"
+foreach ($s in 1,2,3,42,526007) {
+  $spck = if ($s -eq 526007) { "7500000" } else { "8000000" }   # 自检规则
+  foreach ($p in @(
+      @("sp", "checkpoints\ppo_single_env", "ppo_clip_$spck.pth"),
+      @("f",  "checkpoints\fcp",            "ppo_clip_8000000.pth"),
+      @("p",  "checkpoints\fcp2",           "ppo_clip_4000000.pth"),
+      @("s",  "checkpoints\sp_ref",         "ppo_clip_4000000.pth"))) {
+    $out = "$dst\$($p[0])_seed$s"
+    New-Item -ItemType Directory -Force $out | Out-Null
+    Copy-Item (Join-Path $p[1] "seed$s\$($p[2])") "$out\$($p[0])_s$s.pth" -Force
+  }
+}
+Get-ChildItem $dst -Directory | ForEach-Object { $_.Name + "=" + @(Get-ChildItem $_.FullName -Filter *.pth).Count }
 ```
 
-两臂用**同一批 episode seed**，所以是配对比较，方差比「两个总均值相减」小得多。
+期望 20 个目录各 1 个文件。评估时把目录名当 ego 名（`sp_s1`、`p_s1`、`s_s1`、`f_s42`），所以文件名必须保留 `${arm}_s${seed}.pth` 的形式。
 
-同时报告两个指标：
-
-| 指标 | 用途 |
-|---|---|
-| `soups_delivered` | 主指标（端到端上菜数） |
-| `shaped_total` | 过程指标（放洋葱/取盘/取汤的塑形奖励之和） |
-
-主指标全 0 时，过程指标仍能显示配合质量的变化。
-
----
-
-## 指标定义
-
-| 字段 | 含义 | 注意 |
-|---|---|---|
-| `soups_delivered` | 本局上菜数（`sparse_r_by_agent` 之和 / 20） | |
-| `episode_length` | 本局实际步数 | **恒等于 horizon**，因为 done 只由 horizon 触发，无信息量 |
-| `steps_to_first_soup` | 首次上菜的步数 | 没上菜时填 `horizon`，存在截断偏差 |
-| `got_soup` | 本局是否上过菜 | 配合 `steps_to_first_soup` 一起看 |
-| `shaped_total` | 本局塑形奖励累计 | `PLACEMENT_IN_POT_REW=3`、`DISH_PICKUP_REWARD=3`、`SOUP_PICKUP_REWARD=5` |
-| `traj` | 动作序列的 md5 前 12 位 | 用来验证「N 局真的是 N 条轨迹」 |
-
----
-
-## 支持的 checkpoint 格式
-
-`agents/checkpoint.py` 的 `SPPolicy` 同时支持两种：
-
-**旧格式（本目录自带的 11 个 `.pt`）**
-
-```python
-{"state_dict": {...}, "obs_dim": 96, "hidden": 128, "global_step": 460800}
-```
-
-**B 的格式（`algorithms/algo_utils.py::save_weights` 产出）**
-
-```python
-{"format_version": 1, "step": 12345,
- "param": {"obs_dim": 96, "hidden_dim": 128, "action_dim": 6, ...},
- "actor_state": {...},      # 键名形如 network.0.weight
- "critic_state": {...}, "optimizer_state": {...}}
-```
-
-判定依据是字典里有没有 `actor_state` 键。
-加载时缺任何 actor 权重会**直接抛异常**，不会静默退回随机权重。
+> 注意：训练曲线 `results/{fcp,fcp2,sp_ref}/*.npz` 同样不在版本库中（`*.npz` 被忽略）。要重画 F5，需保留训练产出的 npz，或用 `train_fcp.py` 重新训练。
 
 ---
 
 ## 已知限制
 
-| # | 限制 | 说明 |
-|---|---|---|
-| 1 | `episode_length` 恒等于 horizon | 该环境的 done 只由步数上限触发，此项无信息量 |
-| 2 | `steps_to_first_soup` 有截断偏差 | 没上菜时填 horizon，中位数会被拉高 |
-| 3 | 只有 1 个训练 seed | 现有 checkpoint 均来自 seed 0，无法给出训练方差 |
-| 4 | `seen` 组只有 ego 自己 | 未把历史 checkpoint 放进 seen 组，配对口径偏保守 |
-| 5 | `heldout` 含同源 `last.pt` | 严格说它属于「见过的家族」，不是真正的未见伙伴 |
-| 6 | 跨机一致性未实测 | `--check` 只在单机验证过 |
+| # | 限制 |
+|---|---|
+| 1 | 单学习器 + 冻结伙伴 ≠ 联合自对弈，Arm S 不是 SP 的严格对照 |
+| 2 | held-out 与训练伙伴同属 PPO 家族，差异来自采样方式与训练随机性，不是策略类别 |
+| 3 | 训练预算 8M 步、96 维 MLP、单机 CPU，远小于文献量级 |
+| 4 | 只有 1/5 个 seed 的 FCP 学出有效策略，只能作 existence proof，不能当普遍结论 |
+| 5 | 兼容率阈值取 ≥8 汤，属人为设定；≥6 / ≥10 的趋势方向相同 |
+| 6 | 随机初始状态条件只做过一次诊断，未系统评估 |
+| 7 | `scripts/legacy/` 下是旧版流水线与绘图脚本（含 `reproduce_legacy.py`），路径与协议均已过期，不要使用 |
 
 ---
 
 ## 与其它层的边界
 
-| 层 | 提供 | 本目录是否使用 |
+| 层 | 提供 | 本目录 |
 |---|---|---|
-| `envs/`（A） | `OvercookedSingleEnv` / `EnvConfig` / `joint_index` | ❌ 不用，自建 `gameenv_wrapper.py` |
-| `algorithms/`（B） | `PPO` / `save_weights` / `load_weights` | ⚠️ 只读取它产出的 checkpoint 文件 |
-| `agents/`（C） | `SPPolicy` / `FCPPool` / 脚本 bot | ✅ 直接使用 |
+| `envs/`（A） | `OvercookedSingleEnv` / `EnvConfig` / `joint_index` | 训练用；评估用自建 `gameenv_wrapper`（需要随机初始状态与座位固定） |
+| `algorithms/`（B） | `PPO` / `save_weights` / `load_policy` / `get_GAE` | 只读取它产出的 checkpoint，训练时复用 |
+| `agents/`（C） | `SPPolicy` / `FCPPool` / 脚本 bot | 直接使用 |
+
+**为什么不复用 `envs/` 做评估**：`OvercookedSingleEnv` 不传 `start_state_fn`，起始状态固定，评估会退化成"每个伙伴只有一条轨迹"。若 A 之后加上随机初始状态，只需改 `eval/gameenv_wrapper.py` 一个文件即可切换。

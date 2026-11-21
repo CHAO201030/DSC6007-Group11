@@ -81,10 +81,8 @@ def sweep(ego_policy, groups, layout_name="cramped_room", horizon=400,
             "soups_delivered": _stat([r["soups_delivered"] for r in recs]),
             "steps_to_first_soup": _stat([r["steps_to_first_soup"] for r in recs]),
             "shaped_total": _stat([r["shaped_total"] for r in recs]),
-            "episode_length": _stat([r["episode_length"] for r in recs]),
             "n_distinct_trajectories": len({r["traj"] for r in recs}),
             "n_episodes": len(recs),
-                        "n_episodes": len(recs),
             "n_episodes_with_soup": sum(1 for r in recs if r.get("got_soup")),
         }
 

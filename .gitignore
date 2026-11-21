@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------
+﻿# ---------------------------------------------------------------------------
 # PyTorch / model weights
 # ---------------------------------------------------------------------------
 *.pt
@@ -90,5 +90,9 @@ datasets/
 # Keep placeholder files so empty directories can still be tracked
 !**/.gitkeep
 
-# --- A 层补充：训练结果目录 ---
+# --- A 灞傝ˉ鍏咃細璁粌缁撴灉鐩綍 ---
 results/
+
+# --- work_c eval artifacts (override the results/ rule above) ---
+!work_c/results/
+!work_c/results/**

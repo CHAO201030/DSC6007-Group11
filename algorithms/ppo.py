@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from torch.distributions import Categorical
 
 if __package__:
-    from .algo_utils import get_device
+    from .algo_utils import get_device, load_weights
 else:
-    from algo_utils import get_device
+    from algo_utils import get_device, load_weights
 
 @dataclass
 class PPOParams:
@@ -111,7 +111,7 @@ class PPO(nn.Module):
             [torch.as_tensor(v, dtype=dtype, device=device) for v in value]
         )
 
-    def update(self, obs, actions, old_log_probs, advantages, returns):
+    def _prepare_update_data(self, obs, actions, old_log_probs, advantages, returns):
         device = self.param.device
 
         obs = self._stack_steps(obs, device, torch.float32)
@@ -124,7 +124,7 @@ class PPO(nn.Module):
         actions = actions.reshape(-1)
         old_log_probs = old_log_probs.reshape(-1).detach()
         advantages = advantages.reshape(-1)
-        returns = returns.reshape(-1)
+        returns = returns.reshape(-1).detach()
 
         n = obs.shape[0]
         if not (
@@ -138,11 +138,17 @@ class PPO(nn.Module):
                 f"{returns.numel()}"
             )
 
+        return obs, actions, old_log_probs, advantages, returns
+
+    def update(self, obs, actions, old_log_probs, advantages, returns):
+        obs, actions, old_log_probs, advantages, returns = self._prepare_update_data(obs, actions, old_log_probs, advantages, returns)
+        n = obs.shape[0]
+        device = self.param.device
+
         advantages = (advantages - advantages.mean()) / (
             advantages.std(unbiased=False) + 1e-8
         )
         advantages = advantages.detach()
-        returns = returns.detach()
 
         clip_coef = self.param.eps
         batch_size = max(1, min(int(self.param.minibatch_size), n))
@@ -153,7 +159,7 @@ class PPO(nn.Module):
         clip_fraction_sum = 0.0
         seen = 0
 
-        for _ in range(int(self.param.epochs)):
+        for _ in range(self.param.epochs):
             indices = torch.randperm(n, device=device)
             for start in range(0, n, batch_size):
                 idx = indices[start : start + batch_size]
@@ -206,6 +212,17 @@ class PPO(nn.Module):
             clip_fraction_sum / denom,
         )
 
+
+def load_policy(path, device: str = "cpu") -> PPO:
+    """Load one PPO checkpoint and return a ready-to-use policy."""
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    param = PPOParams(**checkpoint["param"])
+    param.device = device
+
+    model = PPO(param)
+    load_weights(model, path)
+    model.global_step = int(checkpoint.get("step", -1))
+    return model
 
 
 if __name__ == "__main__":

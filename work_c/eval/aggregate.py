@@ -9,7 +9,7 @@ import csv
 import json
 from pathlib import Path
 
-RAW_DIR = Path("work_c/results/raw")
+RAW_DIR = Path("work_c/results/raw_final")
 OUT_DIR = Path("work_c/results")
 
 GROUPS = ("seen", "heldout")
@@ -17,7 +17,8 @@ METRICS = ("soups_delivered", "shaped_total", "steps_to_first_soup")
 EXTRA = ("n_episodes_with_soup", "n_distinct_trajectories")
 
 
-def load_results(raw_dir=RAW_DIR):
+def load_results(raw_dir=None):
+    raw_dir = raw_dir or RAW_DIR
     results = []
     for path in sorted(Path(raw_dir).glob("*.json")):
         if path.name.startswith("_"):      # 跳过 _demo_*.json 之类的临时结果
@@ -121,10 +122,10 @@ def write_csv(path, rows):
     print(f"[saved] {path}  ({len(rows)} 行)")
 
 
-def main():
-    results = load_results()
+def main(raw_dir=None):
+    results = load_results(raw_dir)
     if not results:
-        raise SystemExit(f"{RAW_DIR} 里没有可用的结果，先跑 evaluate 或 run_all_experiments")
+        raise SystemExit(f"{raw_dir or RAW_DIR} 里没有可用的结果，先跑 evaluate 或 run_all_experiments")
 
     print(f"[读取] {len(results)} 份结果")
 

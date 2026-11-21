@@ -3,6 +3,7 @@
 import hashlib
 
 import numpy as np
+import torch
 
 from work_c.eval.gameenv_wrapper import OvercookedWrapper
 
@@ -11,6 +12,7 @@ def run_one_episode(ego_policy, partner_policy, layout_name="cramped_room",
                     horizon=400, seed=0, start_state="random_obj",
                     rnd_obj_prob_thresh=0.5, env=None):
     np.random.seed(seed)
+    torch.manual_seed(seed)
     if env is None:
         env = OvercookedWrapper(
             layout_name=layout_name, horizon=horizon,

@@ -8,10 +8,10 @@
 
 用法：
   python -m work_c.scripts.run_all_experiments \
-      --ckpt-dir work_c/partners/self_play_snapshots_old \
-      --heldout-ckpt work_c/partners/self_play_snapshots/sp_seed0_last.pt \
-      --n-episodes 5 --seeds 0,1,2,3,4 \
-      --out-csv work_c/results/learning_curve.csv
+      --ckpt-dir checkpoints/fcp2/seed1 \
+      --heldout-ckpt checkpoints/ppo_vec_env/seed1/ppo_clip_8000000.pth \
+      --n-episodes 5 --seeds 0,1,2 --start-state standard --stochastic \
+      --out-csv work_c/results/curve_p.csv
 """
 
 import argparse
@@ -39,15 +39,22 @@ SCHEMA_VERSION = "1.0"
 
 
 def evaluate_one(ckpt_path, *, horizon, n_episodes, seeds,
-                 start_state, rnd_obj_prob, heldout_ckpts):
+                 start_state, rnd_obj_prob, heldout_ckpts,
+                 seen_dir=None, seen_n=0, stochastic=False):
     """把一个 checkpoint 当 ego 评估，返回 (ego, result_dict)。"""
-    ego = SPPolicy(str(ckpt_path))
+    ego = SPPolicy(str(ckpt_path), deterministic=not stochastic)
     ego.selftest()
 
     seen = [("ego", ego)]
+    if seen_dir and seen_n:
+        from agents.pools import FCPPool
+        pool = FCPPool(sorted(Path(seen_dir).glob("*.pth")))
+        for p in pool.sample(seen_n, seed=int(ego.global_step) + 1):
+            if Path(p).resolve() != Path(ckpt_path).resolve():
+                seen.append((Path(p).stem, SPPolicy(p)))
     heldout = [("scripted:stay", StayBot()), ("scripted:random", RandomBot())]
     for p in heldout_ckpts:
-        heldout.append((Path(p).stem, SPPolicy(str(p))))
+        heldout.append((Path(p).stem, SPPolicy(str(p), deterministic=not stochastic)))
 
     groups = {"seen": seen, "heldout": heldout}
 
@@ -117,8 +124,8 @@ def row_from_result(result):
         "gap_shaped": g_shaped.get("value", ""),
         "gap_shaped_q1": g_shaped.get("q1", ""),
         "gap_shaped_q3": g_shaped.get("q3", ""),
-        "seen_distinct_traj": med("seen", "soups_delivered", "n"),
-        "heldout_distinct_traj": med("heldout", "soups_delivered", "n"),
+        "seen_distinct_traj": metrics["seen"].get("n_distinct_trajectories", ""),
+        "heldout_distinct_traj": metrics["heldout"].get("n_distinct_trajectories", ""),
     }
 
 
@@ -131,11 +138,15 @@ def main(argv=None):
     p.add_argument("--n-episodes", type=int, default=5)
     p.add_argument("--seeds", default="0,1,2,3,4")
     p.add_argument("--horizon", type=int, default=400)
-    p.add_argument("--start-state", default="random_obj",
+    p.add_argument("--start-state", default="standard",
                    choices=["standard", "random_pos", "random_obj"])
     p.add_argument("--rnd-obj-prob", type=float, default=0.5)
     p.add_argument("--out-csv", default="work_c/results/learning_curve.csv")
     p.add_argument("--raw-dir", default="work_c/results/raw")
+    p.add_argument("--seen-dir", help="诊断用：从该目录采样伙伴加入 seen")
+    p.add_argument("--seen-n", type=int, default=0)
+    p.add_argument("--stochastic", action="store_true",
+                   help="按策略分布采样动作（默认 argmax）")
     args = p.parse_args(argv)
 
     seeds = [int(s) for s in args.seeds.split(",") if s.strip()]
@@ -165,6 +176,9 @@ def main(argv=None):
             start_state=args.start_state,
             rnd_obj_prob=args.rnd_obj_prob,
             heldout_ckpts=args.heldout_ckpt,
+            seen_dir=args.seen_dir,
+            seen_n=args.seen_n,
+                        stochastic=args.stochastic,
         )
 
         out_json = raw_dir / f"{path.stem}.json"

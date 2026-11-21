@@ -4,9 +4,10 @@
 
 用法：
   python -m work_c.scripts.evaluate \
-      --ckpt work_c/partners/self_play_snapshots/sp_seed0_best.pt \
-      --seen-dir work_c/partners/self_play_snapshots_old \
-      --out work_c/results/raw/sp_seed0_best.json
+      --ckpt checkpoints/ppo_single_env/seed1/ppo_clip_8000000.pth \
+      --heldout-ckpt checkpoints/ppo_vec_env/seed1/ppo_clip_8000000.pth \
+      --start-state standard --stochastic \
+      --out work_c/results/raw/seed1.json
 """
 
 import argparse
@@ -39,7 +40,7 @@ def build_ego(args):
         return StayBot()
     if not args.ckpt:
         raise SystemExit("必须给 --ckpt，或用 --ego random / stay")
-    ego = SPPolicy(args.ckpt)
+    ego = SPPolicy(args.ckpt, deterministic=not args.stochastic)
     ego.selftest()
     return ego
 
@@ -53,13 +54,13 @@ def build_groups(args, ego):
         for path in sorted(list(d.glob("*.pt")) + list(d.glob("*.pth"))):
             if ego_path is not None and path.resolve() == ego_path:
                 continue
-            seen.append((path.stem, SPPolicy(str(path))))
+            seen.append((path.stem, SPPolicy(str(path), deterministic=not args.stochastic)))
 
     heldout = []
     if not args.no_heldout_scripted:
         heldout += [("scripted:stay", StayBot()), ("scripted:random", RandomBot())]
     for p in args.heldout_ckpt:
-        heldout.append((Path(p).stem, SPPolicy(p)))
+        heldout.append((Path(p).stem, SPPolicy(p, deterministic=not args.stochastic)))
 
     if not heldout:
         raise SystemExit("held-out 集合为空")
@@ -81,9 +82,11 @@ def main(argv=None):
     p.add_argument("--horizon", type=int, default=400)
     p.add_argument("--n-episodes", type=int, default=10)
     p.add_argument("--seeds", default="0,1,2,3,4")
-    p.add_argument("--start-state", default="random_obj",
+    p.add_argument("--start-state", default="standard",
                    choices=["standard", "random_pos", "random_obj"])
     p.add_argument("--rnd-obj-prob", type=float, default=0.5)
+    p.add_argument("--stochastic", action="store_true",
+                   help="按策略分布采样动作（默认 argmax）")
     p.add_argument("--out")
     args = p.parse_args(argv)
 
