@@ -1,0 +1,1241 @@
+{
+  "schema_version": "1.0",
+  "ego": {
+    "name": "ckpt:sp_s526007",
+    "path": "work_c/ckpt_final/sp_seed526007/sp_s526007.pth",
+    "sha256": "07cdba55b2ad3865dfd0220f5423be2d751ff16ae56ee8dea39ab5b7e279f1e1",
+    "global_step": 7500000
+  },
+  "env": {
+    "layout": "cramped_room",
+    "horizon": 400,
+    "start_state": "standard",
+    "rnd_obj_prob_thresh": 0.5,
+    "seat": 0
+  },
+  "protocol": {
+    "n_episodes": 5,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "deterministic_actions": true,
+    "partners": {
+      "seen": [
+        "ego"
+      ],
+      "heldout": [
+        "scripted:stay",
+        "scripted:random",
+        "ppo_clip_8000000",
+        "ppo_clip_8000000",
+        "ppo_clip_8000000"
+      ]
+    }
+  },
+  "metrics": {
+    "seen": {
+      "soups_delivered": {
+        "median": 11.0,
+        "q1": 11.0,
+        "q3": 11.0,
+        "n": 15
+      },
+      "steps_to_first_soup": {
+        "median": 40.0,
+        "q1": 40.0,
+        "q3": 40.0,
+        "n": 15
+      },
+      "shaped_total": {
+        "median": 193.0,
+        "q1": 193.0,
+        "q3": 193.0,
+        "n": 15
+      },
+      "episode_length": {
+        "median": 400.0,
+        "q1": 400.0,
+        "q3": 400.0,
+        "n": 15
+      },
+      "n_distinct_trajectories": 15,
+      "n_episodes": 15,
+      "n_episodes_with_soup": 15
+    },
+    "heldout": {
+      "soups_delivered": {
+        "median": 0.0,
+        "q1": 0.0,
+        "q3": 0.0,
+        "n": 75
+      },
+      "steps_to_first_soup": {
+        "median": 400.0,
+        "q1": 400.0,
+        "q3": 400.0,
+        "n": 75
+      },
+      "shaped_total": {
+        "median": 0.0,
+        "q1": 0.0,
+        "q3": 9.0,
+        "n": 75
+      },
+      "episode_length": {
+        "median": 400.0,
+        "q1": 400.0,
+        "q3": 400.0,
+        "n": 75
+      },
+      "n_distinct_trajectories": 58,
+      "n_episodes": 75,
+      "n_episodes_with_soup": 8
+    }
+  },
+  "coordination_gap": {
+    "soups_delivered": {
+      "metric": "soups_delivered",
+      "value": 11.0,
+      "q1": 11.0,
+      "q3": 11.0,
+      "n_seeds": 3,
+      "definition": "median(soups_delivered|seen) - median(soups_delivered|heldout)，按 seed 配对",
+      "per_seed": [
+        {
+          "seed": 0,
+          "seen_median": 11.0,
+          "heldout_median": 0.0,
+          "gap": 11.0
+        },
+        {
+          "seed": 1,
+          "seen_median": 11.0,
+          "heldout_median": 0.0,
+          "gap": 11.0
+        },
+        {
+          "seed": 2,
+          "seen_median": 11.0,
+          "heldout_median": 0.0,
+          "gap": 11.0
+        }
+      ]
+    },
+    "shaped_total": {
+      "metric": "shaped_total",
+      "value": 193.0,
+      "q1": 193.0,
+      "q3": 193.0,
+      "n_seeds": 3,
+      "definition": "median(shaped_total|seen) - median(shaped_total|heldout)，按 seed 配对",
+      "per_seed": [
+        {
+          "seed": 0,
+          "seen_median": 193.0,
+          "heldout_median": 0.0,
+          "gap": 193.0
+        },
+        {
+          "seed": 1,
+          "seen_median": 193.0,
+          "heldout_median": 0.0,
+          "gap": 193.0
+        },
+        {
+          "seed": 2,
+          "seen_median": 193.0,
+          "heldout_median": 0.0,
+          "gap": 193.0
+        }
+      ]
+    }
+  },
+  "raw": {
+    "seen": [
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "78bd6d816887",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "f67ed8932425",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 5,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 99.0,
+        "traj": "0f5e7b1c80bc",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "c8636e7dfb2e",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "aec05c76eb6f",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "384d2b5f8e2b",
+        "seed": 1,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "eb4986b2e9db",
+        "seed": 1,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "e56e8551e5c2",
+        "seed": 1,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "a1bf04c54d5a",
+        "seed": 1,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 10,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 182.0,
+        "traj": "64aab92c56b5",
+        "seed": 1,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 190.0,
+        "traj": "15d15d1b3d39",
+        "seed": 2,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "48191c21ce88",
+        "seed": 2,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "41db662a6a71",
+        "seed": 2,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "94be4ca7f656",
+        "seed": 2,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 11,
+        "episode_length": 400,
+        "steps_to_first_soup": 40,
+        "got_soup": true,
+        "shaped_total": 193.0,
+        "traj": "84c003ef9c1e",
+        "seed": 2,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 4
+      }
+    ],
+    "heldout": [
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "08f15cea444e",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:stay",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 158,
+        "got_soup": true,
+        "shaped_total": 26.0,
+        "traj": "f36079ab565e",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 8.0,
+        "traj": "975a25fc25e0",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 12.0,
+        "traj": "d98b04a24f38",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 3.0,
+        "traj": "6692a9c1cdb9",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 328,
+        "got_soup": true,
+        "shaped_total": 20.0,
+        "traj": "9bd83d95b84a",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 12.0,
+        "traj": "4475e9f68ddb",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 29.0,
+        "traj": "23d642dd90c9",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 9.0,
+        "traj": "947f5f6f54ce",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 12.0,
+        "traj": "a6b9bc4381ad",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 151,
+        "got_soup": true,
+        "shaped_total": 14.0,
+        "traj": "1edadf9e7392",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 20.0,
+        "traj": "be6c2246d55e",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 26.0,
+        "traj": "48b91f0bde02",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 339,
+        "got_soup": true,
+        "shaped_total": 31.0,
+        "traj": "c8b38b19943b",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 220,
+        "got_soup": true,
+        "shaped_total": 26.0,
+        "traj": "2b30f958c70d",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 191,
+        "got_soup": true,
+        "shaped_total": 20.0,
+        "traj": "abefccdef14a",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "scripted:random",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 265,
+        "got_soup": true,
+        "shaped_total": 17.0,
+        "traj": "867031c23b6c",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 3.0,
+        "traj": "f5be7aeaef8b",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 3.0,
+        "traj": "ae83a9a90d41",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 12.0,
+        "traj": "60564fb2ab22",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 12.0,
+        "traj": "90a7b884ce4a",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 9.0,
+        "traj": "27605a8c7048",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 3.0,
+        "traj": "cdda99cb2fcb",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 12.0,
+        "traj": "16fda93236be",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 1,
+        "episode_length": 400,
+        "steps_to_first_soup": 341,
+        "got_soup": true,
+        "shaped_total": 20.0,
+        "traj": "739ba58b2c8b",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 9.0,
+        "traj": "99a7c3e1e4ca",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 9.0,
+        "traj": "99683aa7b793",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 9.0,
+        "traj": "15de4309a5e1",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 3.0,
+        "traj": "24cc1ef07c77",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 9.0,
+        "traj": "4f27727c7630",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 3.0,
+        "traj": "f0bd028c985c",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "d3731fcc6427",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "7465010b4d89",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "7465010b4d89",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "db2215941985",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "c284bee62e13",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 3.0,
+        "traj": "2f178c1be3aa",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "bd05abfc7866",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "8b46316e130d",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "0f9af8da3e4b",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "af2124bece9a",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "eea5b561efaf",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "e26b213b085f",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "d08c59e284cf",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "1bd08a4ea87e",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "316942cf7a9c",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "42a15289eb86",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "e81349eeeb6f",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "d4fb0de9acae",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "3caab7e78a25",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "1bdcd3876fdd",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "b9918d43a805",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "2c7f578cbf2a",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "0b71e10f5c10",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "934fd7d8b634",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "fa91ec690cf7",
+        "seed": 1,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "2aa60148656a",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "d4fb0de9acae",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "700f574c5c86",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "d4fb0de9acae",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 3
+      },
+      {
+        "soups_delivered": 0,
+        "episode_length": 400,
+        "steps_to_first_soup": 400,
+        "got_soup": false,
+        "shaped_total": 0.0,
+        "traj": "5c9b53541c04",
+        "seed": 2,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 4
+      }
+    ]
+  }
+}

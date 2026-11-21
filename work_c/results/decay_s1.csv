@@ -1,0 +1,17 @@
+﻿ego,partner,soups_median,soups_mean,n
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_1000000,0.0,0.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_1500000,0.0,0.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_2000000,0.0,0.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_2500000,1.0,1.2,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_3000000,0.0,0.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_3500000,0.0,0.2,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_4000000,6.0,6.6,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_4500000,8.0,7.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_500000,0.0,0.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_5000000,11.0,10.2,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_5500000,11.0,9.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_6000000,2.0,2.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_6500000,11.0,11.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_7000000,3.0,3.8,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_7500000,11.0,7.0,5
+ppo_single_env/seed1/ppo_clip_8000000,ppo_single_env/seed1/ppo_clip_8000000,11.0,10.6,5

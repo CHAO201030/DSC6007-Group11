@@ -1,0 +1,203 @@
+{
+  "schema_version": "1.0",
+  "ego": {
+    "name": "ckpt:ppo_clip_8000000",
+    "path": "checkpoints\\ppo_single_env\\seed3\\ppo_clip_8000000.pth",
+    "sha256": "6c58955b1b34321094be33495ed34f6e8a3b5703814c95548286eb395a49cea3",
+    "global_step": 8000000
+  },
+  "env": {
+    "layout": "cramped_room",
+    "horizon": 400,
+    "start_state": "standard",
+    "rnd_obj_prob_thresh": 0.5,
+    "seat": 0
+  },
+  "protocol": {
+    "n_episodes": 3,
+    "seeds": [
+      0
+    ],
+    "deterministic_actions": true,
+    "partners": {
+      "seen": [
+        "ego"
+      ],
+      "heldout": [
+        "ppo_clip_8000000"
+      ]
+    }
+  },
+  "metrics": {
+    "seen": {
+      "soups_delivered": {
+        "median": 10.0,
+        "q1": 10.0,
+        "q3": 10.0,
+        "n": 3
+      },
+      "steps_to_first_soup": {
+        "median": 44.0,
+        "q1": 44.0,
+        "q3": 44.5,
+        "n": 3
+      },
+      "shaped_total": {
+        "median": 179.0,
+        "q1": 179.0,
+        "q3": 179.0,
+        "n": 3
+      },
+      "episode_length": {
+        "median": 400.0,
+        "q1": 400.0,
+        "q3": 400.0,
+        "n": 3
+      },
+      "n_distinct_trajectories": 3,
+      "n_episodes": 3,
+      "n_episodes_with_soup": 3
+    },
+    "heldout": {
+      "soups_delivered": {
+        "median": 10.0,
+        "q1": 9.5,
+        "q3": 10.0,
+        "n": 3
+      },
+      "steps_to_first_soup": {
+        "median": 45.0,
+        "q1": 44.5,
+        "q3": 45.0,
+        "n": 3
+      },
+      "shaped_total": {
+        "median": 179.0,
+        "q1": 174.5,
+        "q3": 179.0,
+        "n": 3
+      },
+      "episode_length": {
+        "median": 400.0,
+        "q1": 400.0,
+        "q3": 400.0,
+        "n": 3
+      },
+      "n_distinct_trajectories": 3,
+      "n_episodes": 3,
+      "n_episodes_with_soup": 3
+    }
+  },
+  "coordination_gap": {
+    "soups_delivered": {
+      "metric": "soups_delivered",
+      "value": 0.0,
+      "q1": 0.0,
+      "q3": 0.0,
+      "n_seeds": 1,
+      "definition": "median(soups_delivered|seen) - median(soups_delivered|heldout)，按 seed 配对",
+      "per_seed": [
+        {
+          "seed": 0,
+          "seen_median": 10.0,
+          "heldout_median": 10.0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "shaped_total": {
+      "metric": "shaped_total",
+      "value": 0.0,
+      "q1": 0.0,
+      "q3": 0.0,
+      "n_seeds": 1,
+      "definition": "median(shaped_total|seen) - median(shaped_total|heldout)，按 seed 配对",
+      "per_seed": [
+        {
+          "seed": 0,
+          "seen_median": 179.0,
+          "heldout_median": 179.0,
+          "gap": 0.0
+        }
+      ]
+    }
+  },
+  "raw": {
+    "seen": [
+      {
+        "soups_delivered": 10,
+        "episode_length": 400,
+        "steps_to_first_soup": 44,
+        "got_soup": true,
+        "shaped_total": 179.0,
+        "traj": "abb075521d4f",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 10,
+        "episode_length": 400,
+        "steps_to_first_soup": 45,
+        "got_soup": true,
+        "shaped_total": 179.0,
+        "traj": "65784835d198",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 10,
+        "episode_length": 400,
+        "steps_to_first_soup": 44,
+        "got_soup": true,
+        "shaped_total": 179.0,
+        "traj": "a3252173d01c",
+        "seed": 0,
+        "group": "seen",
+        "partner": "ego",
+        "ep": 2
+      }
+    ],
+    "heldout": [
+      {
+        "soups_delivered": 10,
+        "episode_length": 400,
+        "steps_to_first_soup": 45,
+        "got_soup": true,
+        "shaped_total": 179.0,
+        "traj": "8a4663598010",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 0
+      },
+      {
+        "soups_delivered": 10,
+        "episode_length": 400,
+        "steps_to_first_soup": 45,
+        "got_soup": true,
+        "shaped_total": 179.0,
+        "traj": "75fb26e5b1da",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 1
+      },
+      {
+        "soups_delivered": 9,
+        "episode_length": 400,
+        "steps_to_first_soup": 44,
+        "got_soup": true,
+        "shaped_total": 170.0,
+        "traj": "7a622e93207b",
+        "seed": 0,
+        "group": "heldout",
+        "partner": "ppo_clip_8000000",
+        "ep": 2
+      }
+    ]
+  }
+}
