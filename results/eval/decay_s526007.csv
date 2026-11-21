@@ -1,0 +1,17 @@
+﻿ego,partner,soups_median,soups_mean,n
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_1000000,0.0,0.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_1500000,0.0,0.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_2000000,6.0,5.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_2500000,1.0,1.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_3000000,9.0,7.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_3500000,1.0,1.4,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_4000000,1.0,0.6,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_4500000,8.0,8.2,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_500000,0.0,0.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_5000000,0.0,0.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_5500000,7.0,6.2,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_6000000,9.0,7.6,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_6500000,1.0,0.8,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_7000000,11.0,10.0,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_7500000,11.0,9.8,5
+ppo_single_env/seed526007/ppo_clip_7500000,ppo_single_env/seed526007/ppo_clip_8000000,0.0,0.0,5

@@ -91,4 +91,6 @@ datasets/
 !**/.gitkeep
 
 # --- A 层补充：训练结果目录 ---
-results/
+results/*
+!results/eval/
+!results/eval/**
